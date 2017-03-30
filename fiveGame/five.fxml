@@ -7,8 +7,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.Pane?>
 
-
-<Pane xmlns="http://javafx.com/javafx/8.0.71" xmlns:fx="http://javafx.com/fxml/1">
+<Pane xmlns="http://javafx.com/javafx/8.0.71" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.FXMLController">
    <children>
       <Group>
          <children>
@@ -27,14 +26,14 @@
                   <Image url="@W.png" />
                </image>
             </ImageView>
-            <ImageView layoutX="14.0" layoutY="255.0">
+            <ImageView fx:id="menu" layoutX="14.0" layoutY="255.0" onMouseClicked="#menuClick">
                <image>
                   <Image url="@menu.png" />
                </image>
             </ImageView>
-            <Label layoutX="76.0" layoutY="200.0" prefHeight="26.0" prefWidth="48.0" text="Label" />
-            <Label layoutX="76.0" layoutY="482.0" prefHeight="26.0" prefWidth="48.0" text="Label" />
-            <Canvas height="523.0" layoutX="165.0" layoutY="14.0" width="520.0">
+            <Label fx:id="write" layoutX="76.0" layoutY="200.0" prefHeight="26.0" prefWidth="48.0" text="Label" />
+            <Label fx:id="black" layoutX="76.0" layoutY="482.0" prefHeight="26.0" prefWidth="48.0" text="Label" />
+            <Canvas fx:id="canvas" height="523.0" layoutX="165.0" layoutY="14.0" onMouseClicked="#canvasClick" width="520.0">
 			
 			</Canvas>
          </children>
