@@ -1,5 +1,5 @@
 package sample;
-import javafx.animation.AnimationTimer;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
@@ -12,11 +12,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.stage.Window;
 import javafx.util.Duration;
 
 import javax.swing.*;
@@ -60,37 +55,17 @@ public class FXMLController {
     @FXML protected void menuClick(MouseEvent event) {
         System.out.println(event.getX());
         System.out.println(event.getY());
-        if (event.getX() < 35) { //点击开始
-            startTimer(true);
-        }
-        else if(event.getX() < 70) {
-            startTimer(false);
-        }
-        else if (event.getX() < 100) {
-            startTimer(true);
-        }
-        else {
-
-        }
-    }
-
-    protected void startTimer(boolean start) {
-        if(start) {
-            /*if (isGameBegin) {
-                String message = "The game has started.";
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("确认");
-                alert.setHeaderText(message);
-                //alert.initOwner(new Window());
-                alert.show();
+        if (event.getX() < 35) { //点击开始, 启动计时器和悔棋线程
+            if (isGameBegin) { //如果已经启动
+                new Alert(Alert.AlertType.INFORMATION, "游戏已经开始").show();
                 return;
-            }*/
+            }
             gc = canvas.getGraphicsContext2D();
             xLine = canvas.getWidth() / 14;
             yLine = canvas.getHeight() / 14;
             isGameBegin = true;
+            isGameOver = false;
             Duration duration = Duration.millis(1000);
-
             robotTimer = new KeyFrame(duration, new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
@@ -115,7 +90,7 @@ public class FXMLController {
             robottimeline.setCycleCount(Timeline.INDEFINITE);
             robottimeline.getKeyFrames().add(robotTimer);
             robottimeline.play();
-            KeyFrame playerTimer = new KeyFrame(duration, new EventHandler<ActionEvent>() {
+            playerTimer = new KeyFrame(duration, new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
                     if (robot.getMyIsPlayingChess() == false && isGameBegin == true && isUndo == false) {
@@ -140,33 +115,6 @@ public class FXMLController {
             playertimeline.getKeyFrames().add(playerTimer);
             playertimeline.play();
 
-           /* playerTimer = new AnimationTimer() {
-                @Override
-                public void handle(long l) {
-                    if (robot.getMyIsPlayingChess() == false && isGameBegin == true && isUndo == false) {
-                        playerMinute = Integer.toString(playerTime / 60);
-                        if (playerMinute.length() == 1)
-                            playerMinute = "0" + playerMinute;
-                        playerSecond = Integer.toString(playerTime % 60);
-                        if (playerSecond.length() == 1)
-                            playerSecond = "0" + playerSecond;
-                        playerTimeLabel.setText(playerMinute + ":" + playerSecond);
-                        playerTime--;
-                        if(playerTime==0) {//如果玩家的时间用完了，表示玩家输
-                            isGameBegin = false;//游戏没有开始
-                            isGameOver = true;//游戏结束
-                            whoSmile = Color.BLACK;//黑色笑
-                            new Alert(Alert.AlertType.INFORMATION, "you lost.").show();
-                        }
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            playerTimer.start();*/
             unDoThread=new Thread(new Runnable(){
                 public void run(){//到执行start方法时线程启动
                     while(true){
@@ -207,7 +155,7 @@ public class FXMLController {
                         }
                         else{
                             try{
-                                System.out.print("undo time --");
+                                // System.out.print("undo time --");
                                 unDoThread.sleep(1000);  //线程睡一秒钟
                                 unDoTime--;//悔棋时间减一
                                 if(unDoTime==-10){
@@ -221,20 +169,47 @@ public class FXMLController {
                     }
                 }
             });
-           // unDoThread.start();
+            unDoThread.setDaemon(true);
+            unDoThread.start();
         }
-        else { //点击暂停
+        else if(event.getX() < 70) { //点击暂停
+            if(isGameOver==true){//如果游戏结束就不执行暂停
+                return;
+            }
             isGameBegin = false;
-            robottimeline.stop();
-            playertimeline.stop();
+        }
+        else if (event.getX() < 100) { //点击继续
+            if(isGameOver==true){//如果游戏结束就不执行继续
+                return;
+            }
+            isGameBegin = true;
+        }
+        else { //点击悔棋
+            if(isGameOver==true || isGameBegin==false){ //如果游戏没有开始或者游戏已经结束就不能悔棋, 每次悔棋必然是悔棋2步(机器人和玩家)
+                return;
+            }
+            isUndo = true;
+            LNode p = stack.Pop();
+            allChesses[p.getRow()][p.getCol()] = null;
+            p = stack.Pop();
+            allChesses[p.getRow()][p.getCol()] = null;
+            repaint();
+            unDoTime=5;//如果5秒钟不单击悔棋表示悔棋结束
+            if(unDoThread.getState()==Thread.State.NEW){//如果该线程没有启动就启动
+                unDoThread.start();
+            }
         }
     }
+
 
     @FXML protected void canvasClick(MouseEvent event) {
         if (gc == null){
             gc = canvas.getGraphicsContext2D();
             xLine = canvas.getWidth() / 14;
             yLine = canvas.getHeight() / 14;
+        }
+        if(!isGameBegin || isGameOver){ //如果没启动或者已经停止
+            return;
         }
         int col = (int)(event.getX()/xLine);
         int row = (int)(event.getY()/yLine);
