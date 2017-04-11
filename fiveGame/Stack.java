@@ -34,14 +34,14 @@ class Stack{
         p.setNext(headLNode.getNext());
         headLNode.setNext(p);
     }
-    public boolean Pop(){
+    public LNode Pop(){
         LNode p;
         if(headLNode.getNext()==null){
-            return false;
+            return null;
         }
         p=headLNode.getNext();
         headLNode.setNext(p.getNext());
-        return true;
+        return p;
     }
     public LNode getStackTop(){
         if(headLNode.getNext()==null){
