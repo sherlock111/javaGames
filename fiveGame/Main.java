@@ -11,7 +11,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("five2.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("five.fxml"));
         primaryStage.setTitle("五子棋");
         Image imageBG = new Image("sample/bg_game.JPG");
         /*Group root = new Group();
